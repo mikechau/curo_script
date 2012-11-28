@@ -1,4 +1,4 @@
-== kurotrade
+= kurotrade
 
 This is to test eventual logic that will be integrated into kurotrade.
 
@@ -10,3 +10,7 @@ Goals:
 - Order display by Date
 - Track Open Position Qty
 - Calculate Net Asset Value (NAV)
+
+= FAQ:
+1. Why is this called Curo instead of Kuro?
+- Done on purpose! :)
