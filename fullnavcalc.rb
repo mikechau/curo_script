@@ -1,6 +1,7 @@
 require 'date'
 
 transactions = [
+								{:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 11.00, :qty => 5.00, :acc_for => 'no' },
 								{:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 10.00, :qty => 5.00, :acc_for => 'no' },
 								{:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 10.00, :qty => 5.00, :acc_for => 'no' },
 								{:date => '2011-04-20', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 5.00, :acc_for => 'no' },
@@ -41,7 +42,6 @@ nav_per_unit = balance / nav_units
 # puts '====='
 
 
-
 transactions.each_with_index do |trade, index|
 
 	if trade[:action] == "BUY"
@@ -50,8 +50,8 @@ transactions.each_with_index do |trade, index|
 		#check if Buy exists in open_positions array, if not add to array
 		if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:price] == trade[:price]}
 			match_position = open_positions.find {|o| o[:ticker] == trade[:ticker] && o[:price] == trade[:price]}
-			puts open_positions.index(match_position)
-			
+			op_lock = open_positions.index(match_position)
+			open_positions[op_lock][:qty] += trade[:qty]
 			trade[:acc_for] = 'yes'		
 		else
 			open_positions << {:ticker => trade[:ticker], :price => trade[:price], :qty => trade[:qty]}
@@ -86,7 +86,7 @@ transactions.each_with_index do |trade, index|
 				end
 
 			else
-				puts 'Error: Something went wrong!'
+				#nothing to return
 			end
 
 		end
