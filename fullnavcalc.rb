@@ -1,6 +1,5 @@
 require 'date'
 
-
 ###### SEED DATA ###### 
 
 transactions = [
@@ -42,8 +41,10 @@ nav_per_unit = balance / nav_units
 
 ###### CORE LOGIC (REFACTOR LATER) ###### 
 
+#loop through the transactions array
 transactions.each_with_index do |trade, index|
 
+	# shovel the transactions hash without :acc_for hash into trades_array
 	trades_array << {:date => trade[:date], :desc => trade[:action], :ticker => trade[:ticker], :price => trade[:price], :qty => trade[:qty]}
 
 	if trade[:action] == "BUY"
@@ -76,6 +77,7 @@ transactions.each_with_index do |trade, index|
 				# eventually shovel into new array to organize w/ other stocks
 				end_day.each_with_index do |history, index|
 					puts "[MRKT] => #{history[:date]} || TICKER: #{history[:ticker]} || PRICE: #{history[:eod_price]}"
+
 					market_status_array << {:date => history[:date], :desc => 'MRKT', :ticker => history[:ticker], :price => history[:eod_price]}
 				end
 
@@ -85,11 +87,14 @@ transactions.each_with_index do |trade, index|
 			# there are no 'SELL' actions, continue displaying market prices
 			elsif transactions.any? {|t| t[:ticker] == trade[:ticker] && t[:action] == "BUY"} && trade[:acc_for] == 'no'
 				puts "[BUY] => #{trade[:date]} || TICKER: #{trade[:ticker]} || PRICE: #{trade[:price]} || QTY: #{trade[:qty]}"
+
 				end_day = eod_prices.select {|t| t[:ticker] == trade[:ticker] && Date.parse(t[:date]) >= Date.parse(trade[:date])}
-				#end_day_count = end_day.count
+				
 				end_day.each_with_index do |history, index|
+				
 					puts "[MRKT] => #{history[:date]} || TICKER: #{history[:ticker]} || PRICE: #{history[:eod_price]}"
 					market_status_array << {:date => history[:date], :desc => 'MRKT', :ticker => history[:ticker], :price => history[:eod_price]}
+
 				end
 
 			else
@@ -115,7 +120,6 @@ transactions.each_with_index do |trade, index|
 					op[:qty] -= op_decrease
 
 					qty_sold = remainder
-
 				end
 			end
 		else
@@ -131,5 +135,24 @@ market_status_array = market_status_array.uniq
 trades_array += market_status_array
 trades_array.sort! { |x, y| x[:date] <=> y[:date]}
 
-puts '-------------'
-puts trades_array
+negative_sells = trades_array.select {|t| t[:desc] == 'SELL'}
+negative_sells.each do |trade|
+	trade[:qty] *=-1
+end
+
+# puts '-------------'
+# puts trades_array
+# puts '-------------'
+# puts open_positions
+
+puts '================================='
+puts "Starting Cash Balance: #{balance}"
+puts '================================='
+
+trades_array.each_with_index do |trade, idx|
+	if trade[:qty] != nil
+		puts "[#{idx+1}] || Date: #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Price: #{trade[:price]} || Qty: #{trade[:qty]}"
+	else
+		puts "[#{idx+1}] || Date: #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Price: #{trade[:price]}"
+	end
+end
