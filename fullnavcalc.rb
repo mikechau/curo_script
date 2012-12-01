@@ -1,14 +1,14 @@
 require 'date'
 
+
+###### SEED DATA ###### 
+
 transactions = [
 								{:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 11.00, :qty => 15.00, :acc_for => 'no'},
 								{:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
 								{:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 10.00, :qty => 5.00, :acc_for => 'no' },
 								{:date => '2011-04-19', :action => "SELL", :ticker => "AAPL", :price => 10.00, :qty => 20.00, :acc_for => 'no'},
 								{:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 5.00, :acc_for => 'no'}
-								# {:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 5.00, :acc_for => 'no'}
-								# {:date => '2011-04-20', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 5.00, :acc_for => 'no' },
-								# {:date => '2011-04-20', :action => "BUY", :ticker => "AAPL", :price => 15.00, :qty => 5.00, :acc_for => 'no' }
 							 ]
 
 eod_prices = [
@@ -27,25 +27,20 @@ eod_prices = [
 							{:date => '2011-06-04', :ticker => "AAPL", :eod_price => 10.00},
 						 ]
 
-open_positions = []
+###### EMPTY ARRAYS ###### 
 
-# postions_sample = [
-# 									 {:ticker => 'AAPL', :price => 10.00, :qty => 5.00}
-# 									]
+open_positions = []
 
 market_status_array = []
 trades_array = []
 
+###### INITIAL VARIABLES ###### 
 
 nav_units = 1000.00
 balance = 2000.00
 nav_per_unit = balance / nav_units
 
-# puts transactions.any? {|t| t[:date] == '2011-04-16'}
-# puts transactions.select {|t| t[:ticker] == 'AAPL' && t[:action] == 'BUY' && t[:date] == '2011-04-16'}
-# puts transactions.select {|t| t[:ticker] == 'AAPL' }
-# puts '====='
-
+###### CORE LOGIC (REFACTOR LATER) ###### 
 
 transactions.each_with_index do |trade, index|
 
@@ -131,60 +126,10 @@ transactions.each_with_index do |trade, index|
 	end
 end
 
-# puts 'Transactions:'
-# puts transactions
-# puts 'Open Positions:'
-# puts open_positions
-
-# puts '-------------'
-puts market_status_array = market_status_array.uniq
+market_status_array = market_status_array.uniq
 
 trades_array += market_status_array
+trades_array.sort! { |x, y| x[:date] <=> y[:date]}
 
 puts '-------------'
-#sort_me.sort! { |x, y| x["value"] <=> y["value"] }
-
-trades_array.sort! { |x, y| x[:date] <=> y[:date]}
 puts trades_array
-
-
-
-		# if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] > trade[:qty]}
-		# 	open_positions.find {|o| o[:ticker] == trade[:ticker] && o[:qty] > 0}[:qty] -= trade[:qty]
-		# 	transactions.find{|t| t[:ticker] == trade[:ticker] && t[:action] == 'BUY' && t[:count] >= trade[:qty]}[:count] -= trade[:qty]
-		# elsif open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] < trade[:qty]}
-		# 	open_buys = transactions.select {|t| t[:ticker] == trade[:ticker] && t[:qty] > 0} #track remaining
-		# 	puts "x: #{open_buys}"
-			
-		# 	open_buys.each do |pos|
-		# 		puts pos[:qty] -= trade[:qty]
-		# 		puts pos
-
-		# 		if pos[:qty] < 0
-		# 		end
-		# 	end
-
-		# end
-
-
-
-
-				# 	transaction_buy_count = transactions.find {|t| t[:ticker] == trade[:ticker] && t[:action] == 'BUY' && t[:count] >= trade[:qty]}
-				# if puts transaction_buy_count[:count] < trade[:qty]
-				# 	select_buys = transactions.select {|t| t[:ticker] == trade[:ticker] && t[:action] == 'BUY' && t[:count] > 0} 
-				# 	qty_sold = trade[:qty]
-				# 	select_buys.each do |transaction|
-				# 		if transaction[:count] > 0
-				# 			puts '----'
-				# 			puts buy_count = transaction[:count]
-
-				# 			puts remainder = qty_sold - buy_count
-				# 			puts decrease_buy = qty_sold - remainder
-
-				# 			puts transaction[:count] -= decrease_buy
-
-				# 			puts qty_sold = remainder
-				# 			puts '---'
-				# 		end
-				# 	end
-				# end
