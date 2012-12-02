@@ -12,7 +12,11 @@ transactions = [
                 {:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 15.00, :acc_for => 'no'},
                 {:date => '2011-05-01', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 55.00, :acc_for => 'no'},
                 {:date => '2011-05-02', :action => "BUY", :ticker => "AAPL", :price => 13.00, :qty => 55.00, :acc_for => 'no'},
-                {:date => '2011-05-04', :action => "SELL", :ticker => "AAPL", :price => 13.00, :qty => 100.00, :acc_for => 'no'}
+                {:date => '2011-05-04', :action => "SELL", :ticker => "AAPL", :price => 13.00, :qty => 100.00, :acc_for => 'no'},
+                {:date => '2011-05-04', :action => "SELL", :ticker => "AAPL", :price => 13.00, :qty => 300.00, :acc_for => 'no'},
+                {:date => '2011-05-19', :action => "BUY", :ticker => "AAPL", :price => 100.00, :qty => 5000.00, :acc_for => 'no'},
+                {:date => '2011-05-20', :action => "BUY", :ticker => "AAPL", :price => 101.00, :qty => 500.00, :acc_for => 'no'},
+                {:date => '2011-05-25', :action => "SELL", :ticker => "AAPL", :price => 100.00, :qty => 500.00, :acc_for => 'no'}
                ]
 
 eod_prices = [
