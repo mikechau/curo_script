@@ -4,8 +4,8 @@ require 'date'
 
 transactions = [
 								{:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 11.00, :qty => 15.00, :acc_for => 'no'},
-								{:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
-								{:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 10.00, :qty => 5.00, :acc_for => 'no' },
+								{:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
+								{:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 10.00, :qty => 5.00, :acc_for => 'no' },
 								{:date => '2011-04-19', :action => "SELL", :ticker => "AAPL", :price => 10.00, :qty => 20.00, :acc_for => 'no'},
 								{:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 5.00, :acc_for => 'no'}
 							 ]
@@ -46,12 +46,12 @@ transactions.each_with_index do |trade, index|
 
 		#check if Buy exists in open_positions array, if not add to array
 		if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:price] == trade[:price]}
-			match_position = open_positions.find {|o| o[:ticker] == trade[:ticker] && o[:price] == trade[:price]}
+			match_position = open_positions.find {|o| o[:ticker] == trade[:ticker] && o[:price] == trade[:price] && o[:date] == trade[:date]}
 			op_lock = open_positions.index(match_position)
 			open_positions[op_lock][:qty] += trade[:qty]
-			trade[:acc_for] = 'yes'		
+			trade[:acc_for] = 'yes'
 		else
-			open_positions << {:ticker => trade[:ticker], :price => trade[:price], :qty => trade[:qty]}
+			open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => trade[:price], :qty => trade[:qty]}
 		end
 
 		#check if the ticker exists in the market data table
@@ -100,12 +100,12 @@ transactions.each_with_index do |trade, index|
 	elsif trade[:action] == "SELL"
 		#puts "[SELL] => #{trade[:date]} || TICKER: #{trade[:ticker]} || PRICE: #{trade[:price]} || QTY: #{trade[:qty]}"
 		# open positions needs to be revised to track date of position
-		if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty]}
-			op_qty = open_positions.find {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty]}[:qty]
+		if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty] && o[:date] == trade[:date]}
+			op_qty = open_positions.find {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty] && o[:date] == trade[:date]}[:qty]
 			op_qty -= trade[:qty]
 
 		elsif open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] < trade[:qty]}
-			op_select = open_positions.select {|o| o[:ticker] == trade[:ticker] }
+			op_select = open_positions.select {|o| o[:ticker] == trade[:ticker] && Date.parse(o[:date]) >= Date.parse(trade[:date])}
 			qty_sold = trade[:qty]
 			op_select.each do |op|
 				if op[:qty] > 0
@@ -164,8 +164,8 @@ trades_array.each_with_index do |trade, idx|
 	#this is market
 	else
 		#market_value = trade[:price] #broken
-		market_stock_balance += (market_value * -1)
-		puts "[#{idx+1}] || #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Price: #{trade[:price]} || Market Value: #{market_value} "
+		#market_stock_balance += (market_value * -1)
+		puts "[#{idx+1}] || #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Price: #{trade[:price]} || Market Value: "
 	end
 end
 
