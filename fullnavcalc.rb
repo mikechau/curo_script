@@ -33,13 +33,7 @@ open_positions = []
 market_status_array = []
 trades_array = []
 
-###### INITIAL VARIABLES ###### 
-
-nav_units = 1000.00
-balance = 2000.00
-nav_per_unit = balance / nav_units
-
-###### CORE LOGIC (REFACTOR LATER) ###### 
+###### Taking arrays to create a main array to work with ###### 
 
 #loop through the transactions array
 transactions.each_with_index do |trade, index|
@@ -71,12 +65,12 @@ transactions.each_with_index do |trade, index|
 				end_day = eod_prices.select {|t| t[:ticker] == trade[:ticker] && Date.parse(t[:date]) >= Date.parse(trade[:date]) && Date.parse(t[:date]) < Date.parse(stop_date[:date])}
 				#end_day_count = end_day.count
 
-				puts "[BUY] => #{trade[:date]} || TICKER: #{trade[:ticker]} || PRICE: #{trade[:price]} || QTY: #{trade[:qty]}"
+				#puts "[BUY] => #{trade[:date]} || TICKER: #{trade[:ticker]} || PRICE: #{trade[:price]} || QTY: #{trade[:qty]}"
 
 				#runs through the array pulled from .select and prints the market prices
 				# eventually shovel into new array to organize w/ other stocks
 				end_day.each_with_index do |history, index|
-					puts "[MRKT] => #{history[:date]} || TICKER: #{history[:ticker]} || PRICE: #{history[:eod_price]}"
+					#puts "[MRKT] => #{history[:date]} || TICKER: #{history[:ticker]} || PRICE: #{history[:eod_price]}"
 
 					market_status_array << {:date => history[:date], :desc => 'MRKT', :ticker => history[:ticker], :price => history[:eod_price]}
 				end
@@ -86,26 +80,26 @@ transactions.each_with_index do |trade, index|
 		
 			# there are no 'SELL' actions, continue displaying market prices
 			elsif transactions.any? {|t| t[:ticker] == trade[:ticker] && t[:action] == "BUY"} && trade[:acc_for] == 'no'
-				puts "[BUY] => #{trade[:date]} || TICKER: #{trade[:ticker]} || PRICE: #{trade[:price]} || QTY: #{trade[:qty]}"
+				#puts "[BUY] => #{trade[:date]} || TICKER: #{trade[:ticker]} || PRICE: #{trade[:price]} || QTY: #{trade[:qty]}"
 
 				end_day = eod_prices.select {|t| t[:ticker] == trade[:ticker] && Date.parse(t[:date]) >= Date.parse(trade[:date])}
 				
 				end_day.each_with_index do |history, index|
 				
-					puts "[MRKT] => #{history[:date]} || TICKER: #{history[:ticker]} || PRICE: #{history[:eod_price]}"
+					#puts "[MRKT] => #{history[:date]} || TICKER: #{history[:ticker]} || PRICE: #{history[:eod_price]}"
 					market_status_array << {:date => history[:date], :desc => 'MRKT', :ticker => history[:ticker], :price => history[:eod_price]}
 
 				end
 
 			else
-				puts "[BUY] => #{trade[:date]} || TICKER: #{trade[:ticker]} || PRICE: #{trade[:price]} || QTY: #{trade[:qty]}"
+				#puts "[BUY] => #{trade[:date]} || TICKER: #{trade[:ticker]} || PRICE: #{trade[:price]} || QTY: #{trade[:qty]}"
 			end
 
 		end
 
 	elsif trade[:action] == "SELL"
-		puts "[SELL] => #{trade[:date]} || TICKER: #{trade[:ticker]} || PRICE: #{trade[:price]} || QTY: #{trade[:qty]}"
-
+		#puts "[SELL] => #{trade[:date]} || TICKER: #{trade[:ticker]} || PRICE: #{trade[:price]} || QTY: #{trade[:qty]}"
+		# open positions needs to be revised to track date of position
 		if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty]}
 			op_qty = open_positions.find {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty]}[:qty]
 			op_qty -= trade[:qty]
@@ -130,6 +124,8 @@ transactions.each_with_index do |trade, index|
 	end
 end
 
+# clean up the arrays into trades_array
+
 market_status_array = market_status_array.uniq
 
 trades_array += market_status_array
@@ -140,19 +136,45 @@ negative_sells.each do |trade|
 	trade[:qty] *=-1
 end
 
-# puts '-------------'
-# puts trades_array
-# puts '-------------'
-# puts open_positions
+###### VARIABLES ###### 
 
-puts '================================='
-puts "Starting Cash Balance: #{balance}"
-puts '================================='
+nav_units = 1000.0
+cash_balance = 2000.0
+stock_balance = 0.0
+nav_per_unit = cash_balance / nav_units
+market_stock_balance = 0.0
+
+qty = 0.0
+
+puts '============================================================================='
+puts "Starting Cash Balance: #{cash_balance}"
+puts "Starting Stock Balance: #{stock_balance}"
+puts "Starting Net Asset Value Units: #{nav_units}"
+puts "Starting NAV per Unit: #{nav_per_unit}"
+puts '============================================================================='
 
 trades_array.each_with_index do |trade, idx|
+	# this is a buy or sell
 	if trade[:qty] != nil
-		puts "[#{idx+1}] || Date: #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Price: #{trade[:price]} || Qty: #{trade[:qty]}"
+		book_value = trade[:qty] * trade[:price] * -1
+		cash_balance += book_value
+		stock_balance += (book_value * -1)
+		puts "[#{idx+1}] || #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Price: #{trade[:price]} || Qty: #{trade[:qty]} || Book Value: #{book_value} || Cash Balance: #{cash_balance} || Stock Balance: #{stock_balance}"
+		puts "#{trade[:date]} :: #{open_positions}"
+	#this is market
 	else
-		puts "[#{idx+1}] || Date: #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Price: #{trade[:price]}"
+		#market_value = trade[:price] #broken
+		market_stock_balance += (market_value * -1)
+		puts "[#{idx+1}] || #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Price: #{trade[:price]} || Market Value: #{market_value} "
+	end
+end
+
+puts '============================================================================='
+puts 'Positions:'
+open_positions.each do |op|
+	if op[:qty] > 0
+		puts "Ticker: #{op[:ticker]} || Book Price: #{op[:price]} || Qty: #{op[:qty]}"
+	else
+		puts "Ticker: #{op[:ticker]} || Book Price: #{op[:price]} || Qty: #{op[:qty]} - [CLOSED]" 
 	end
 end
