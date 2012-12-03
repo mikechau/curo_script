@@ -3,10 +3,20 @@ require 'date'
 
 transactions = [
                 {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 11.00, :qty => 15.00, :acc_for => 'no'},
-                {:date => '2011-04-18', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 15.00, :acc_for => 'no'},
-                {:date => '2011-04-19', :action => "SELL", :ticker => "AAPL", :price => 11.00, :qty => 20.00, :acc_for => 'no'},
-                {:date => '2011-04-20', :action => "BUY", :ticker => "AAPL", :price => 11.00, :qty => 15.00, :acc_for => 'no'},
-                {:date => '2011-04-20', :action => "BUY", :ticker => "GOOG", :price => 12.00, :qty => 5.00, :acc_for => 'no'}
+                {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 11.00, :qty => 15.00, :acc_for => 'no'},
+                {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
+                {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
+                {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 10.00, :qty => 5.00, :acc_for => 'no'},
+                {:date => '2011-04-19', :action => "SELL", :ticker => "AAPL", :price => 10.00, :qty => 20.00, :acc_for => 'no'},
+                {:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 5.00, :acc_for => 'no'},
+                {:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 15.00, :acc_for => 'no'},
+                {:date => '2011-05-01', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 55.00, :acc_for => 'no'},
+                {:date => '2011-05-02', :action => "BUY", :ticker => "AAPL", :price => 13.00, :qty => 55.00, :acc_for => 'no'},
+                {:date => '2011-05-04', :action => "SELL", :ticker => "AAPL", :price => 13.00, :qty => 100.00, :acc_for => 'no'},
+                {:date => '2011-05-04', :action => "SELL", :ticker => "AAPL", :price => 13.00, :qty => 10.00, :acc_for => 'no'},
+                {:date => '2011-05-19', :action => "BUY", :ticker => "AAPL", :price => 100.00, :qty => 5000.00, :acc_for => 'no'},
+                {:date => '2011-05-20', :action => "BUY", :ticker => "AAPL", :price => 101.00, :qty => 500.00, :acc_for => 'no'},
+                {:date => '2011-05-25', :action => "SELL", :ticker => "AAPL", :price => 100.00, :qty => 500.00, :acc_for => 'no'}
                ]
 
 eod_prices = [
@@ -120,7 +130,7 @@ transactions.each_with_index do |trade,idx|
     if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty] && o[:mark] != 'yes'}
       ops = open_positions.find {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty] && o[:mark] != 'yes'}
       difference = ops[:qty] - trade[:qty]
-      open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => ops[:price], :qty => difference, :wtf => 'yo'}
+      open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => ops[:price], :qty => difference}
     
     elsif open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] < trade[:qty] && o[:mark] != 'yes'}
       ops = open_positions.select {|o| o[:ticker] == trade[:ticker] && o[:qty] > 0 && o[:mark] != 'yes'}
