@@ -1,22 +1,11 @@
-# Full Nav Calc V.0.0.3
+# Full Nav Calc V.0.0.4
 require 'date'
 
 transactions = [
                 {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 11.00, :qty => 15.00, :acc_for => 'no'},
                 {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 11.00, :qty => 15.00, :acc_for => 'no'},
                 {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
-                {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
-                {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 10.00, :qty => 5.00, :acc_for => 'no' }
-                # {:date => '2011-04-19', :action => "SELL", :ticker => "AAPL", :price => 10.00, :qty => 20.00, :acc_for => 'no'},
-                # {:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 5.00, :acc_for => 'no'},
-                # {:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 15.00, :acc_for => 'no'},
-                # {:date => '2011-05-01', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 55.00, :acc_for => 'no'},
-                # {:date => '2011-05-02', :action => "BUY", :ticker => "AAPL", :price => 13.00, :qty => 55.00, :acc_for => 'no'},
-                # {:date => '2011-05-04', :action => "SELL", :ticker => "AAPL", :price => 13.00, :qty => 100.00, :acc_for => 'no'},
-                # {:date => '2011-05-04', :action => "SELL", :ticker => "AAPL", :price => 13.00, :qty => 10.00, :acc_for => 'no'},
-                # {:date => '2011-05-19', :action => "BUY", :ticker => "AAPL", :price => 100.00, :qty => 5000.00, :acc_for => 'no'},
-                # {:date => '2011-05-20', :action => "BUY", :ticker => "AAPL", :price => 101.00, :qty => 500.00, :acc_for => 'no'},
-                # {:date => '2011-05-25', :action => "SELL", :ticker => "AAPL", :price => 100.00, :qty => 500.00, :acc_for => 'no'}
+                {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'}
                ]
 
 eod_prices = [
@@ -122,14 +111,14 @@ transactions.each_with_index do |trade,idx|
       difference = op[:qty] - trade[:qty]
       open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => difference}
 
-    elsif most_recent.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty] && Date.parse(o[:date]) < Date.parse(trade[:date])}
-      matching_positions = most_recent.select {|o| o[:ticker] == trade[:ticker] && o[:qty] > 0 && Date.parse(o[:date]) < Date.parse(trade[:date])}
-      puts matching_positions
-      last_index = (matching_positions.count) - 1
-      previous_qty = matching_positions[last_index -1][:qty]
-      new_qty = previous_qty - trade[:qty]
+    # elsif most_recent.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty] && Date.parse(o[:date]) < Date.parse(trade[:date])}
+    #   matching_positions = most_recent.select {|o| o[:ticker] == trade[:ticker] && o[:qty] > 0 && Date.parse(o[:date]) < Date.parse(trade[:date])}
+    #   puts matching_positions
+    #   last_index = (matching_positions.count) - 1
+    #   previous_qty = matching_positions[last_index -1][:qty]
+    #   new_qty = previous_qty - trade[:qty]
 
-      open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => matching_positions[last_index][:price], :qty => new_qty, :debug => '1'}
+    #   open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => matching_positions[last_index][:price], :qty => new_qty, :debug => '1'}
 
     elsif most_recent.any? {|o| o[:ticker] == trade[:ticker]}
       op_select = most_recent.select {|o| o[:ticker] == trade[:ticker] && o[:qty] > 0}
