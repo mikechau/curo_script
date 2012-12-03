@@ -3,16 +3,9 @@ require 'date'
 
 transactions = [
                 {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 11.00, :qty => 15.00, :acc_for => 'no'},
-                {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 11.00, :qty => 15.00, :acc_for => 'no'},
-                {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
-                {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
-                {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
-                {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
-                {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
-                {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
-                {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
-                {:date => '2011-04-19', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
-                {:date => '2011-04-20', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
+                {:date => '2011-04-18', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 15.00, :acc_for => 'no'},
+                {:date => '2011-04-19', :action => "SELL", :ticker => "AAPL", :price => 11.00, :qty => 20.00, :acc_for => 'no'},
+                {:date => '2011-04-20', :action => "BUY", :ticker => "AAPL", :price => 11.00, :qty => 15.00, :acc_for => 'no'},
                 {:date => '2011-04-20', :action => "BUY", :ticker => "GOOG", :price => 12.00, :qty => 5.00, :acc_for => 'no'}
                ]
 
@@ -54,8 +47,8 @@ transactions.each_with_index do |trade,idx|
 
   ###############################################
     #check if Buy exists in open_positions array, if not add to array
-    if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:price] == trade[:price] && o[:date] == trade[:date] && o[:qty] > 0}
-      matching_positions = open_positions.select {|o| o[:ticker] == trade[:ticker] && o[:price] == trade[:price]}
+    if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:price] == trade[:price] && o[:qty] > 0 && o[:date] == trade[:date] && o[:mark] == nil} 
+      matching_positions = open_positions.select {|o| o[:ticker] == trade[:ticker] && o[:price] == trade[:price] && o[:mark] == nil}
       last_index = (matching_positions.count) - 1
       matching_positions[last_index][:qty] += trade[:qty]
       trade[:acc_for] = 'yes'
@@ -71,6 +64,7 @@ transactions.each_with_index do |trade,idx|
     end
 
     unique_prices = transactions.select {|o| o[:ticker] == trade[:ticker]}.uniq! {|t| t[:price]}
+    puts unique_prices
     if unique_prices != nil
       unique_prices.each_with_index do |uq, idx|
         check_positions = open_positions.select {|o| o[:ticker] == trade[:ticker] && o[:price] == uq[:price]}
@@ -118,6 +112,40 @@ transactions.each_with_index do |trade,idx|
     end
   ###############################################
 
+############# SELL CHECK    
+  elsif trade[:action] == 'SELL'
+
+  ###############################################
+
+    if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty] && o[:mark] != 'yes'}
+      ops = open_positions.find {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty] && o[:mark] != 'yes'}
+      difference = ops[:qty] - trade[:qty]
+      open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => ops[:price], :qty => difference, :wtf => 'yo'}
+    
+    elsif open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] < trade[:qty] && o[:mark] != 'yes'}
+      ops = open_positions.select {|o| o[:ticker] == trade[:ticker] && o[:qty] > 0 && o[:mark] != 'yes'}
+      qty_sold = trade[:qty]
+      ops.each do |op|
+        if qty_sold > 0 && qty_sold >= op[:qty]
+          remainder = qty_sold - op[:qty]
+          op_decrease = qty_sold - remainder
+          qty_subtracted = op[:qty] - op_decrease
+          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted}
+          qty_sold = remainder
+        elsif qty_sold > 0 && qty_sold < op[:qty]
+          qty_subtracted = op[:qty] - qty_sold
+          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted}
+        else
+          puts "Error: Check ops.each. #{trade}"
+        end 
+      end
+
+    else
+      puts "Error: Check Sell conditional. #{trade}"
+    end
+
+  ###############################################
+
   else
     puts '[BUY/SELL] - ERROR: Action not BUY or SELL!'
   end
@@ -129,7 +157,6 @@ puts open_positions
 puts '----TRANSACTIONS---------'
 puts transactions
 puts '----MARKET STATUS--------'
-#puts market_status_array
 
 capture_tickers = transactions.uniq {|t| t[:ticker]}
 market_log = []
