@@ -81,8 +81,7 @@ transactions.each_with_index do |trade,idx|
             pos[:mark] = 'yes'
           end
         end
-    end
-    
+      end
     end
   ###############################################
 
@@ -137,14 +136,13 @@ transactions.each_with_index do |trade,idx|
           remainder = qty_sold - op[:qty]
           op_decrease = qty_sold - remainder
           qty_subtracted = op[:qty] - op_decrease
-          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted, :sold => op_decrease}
+          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted, :sold => op_decrease, :test => '1'}
           qty_sold = remainder
-        elsif qty_sold > 0 && qty_sold < op[:qty]
-          qty_subtracted = op[:qty] - qty_sold
-          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted, :sold => qty_sold}
-          qty_sold = 0
+        # elsif qty_sold > 0 && qty_sold < op[:qty]
         else
-          puts "Error: Check ops.each. #{trade}"
+          qty_subtracted = op[:qty] - qty_sold
+          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted, :sold => qty_sold, :test => '2'}
+          qty_sold = 0
         end 
       end
     end
@@ -159,12 +157,8 @@ transactions.each_with_index do |trade,idx|
             pos[:mark] = 'yes'
           end
         end
-    end      
-
-
-    else
-      puts "Error: Check Sell conditional. #{trade}"
-    end
+      end
+    end     
 
   ###############################################
 
