@@ -6,10 +6,8 @@ transactions = [
                 {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 11.00, :qty => 15.00, :acc_for => 'no'},
                 {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
                 {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
-                {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 10.00, :qty => 5.00, :acc_for => 'no'},
                 {:date => '2011-04-19', :action => "SELL", :ticker => "AAPL", :price => 10.00, :qty => 20.00, :acc_for => 'no'},
                 {:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 5.00, :acc_for => 'no'},
-                {:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 15.00, :acc_for => 'no'},
                 {:date => '2011-05-01', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 55.00, :acc_for => 'no'},
                 {:date => '2011-05-02', :action => "BUY", :ticker => "AAPL", :price => 13.00, :qty => 55.00, :acc_for => 'no'},
                 {:date => '2011-05-04', :action => "SELL", :ticker => "AAPL", :price => 13.00, :qty => 100.00, :acc_for => 'no'},
@@ -74,7 +72,6 @@ transactions.each_with_index do |trade,idx|
     end
 
     unique_prices = transactions.select {|o| o[:ticker] == trade[:ticker]}.uniq! {|t| t[:price]}
-    puts unique_prices
     if unique_prices != nil
       unique_prices.each_with_index do |uq, idx|
         check_positions = open_positions.select {|o| o[:ticker] == trade[:ticker] && o[:price] == uq[:price]}
@@ -127,12 +124,12 @@ transactions.each_with_index do |trade,idx|
 
   ###############################################
 
-    if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty] && o[:mark] != 'yes'}
-      ops = open_positions.find {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty] && o[:mark] != 'yes'}
-      difference = ops[:qty] - trade[:qty]
-      open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => ops[:price], :qty => difference}
+    # if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty] && o[:mark] != 'yes'}
+    #   ops = open_positions.find {|o| o[:ticker] == trade[:ticker] && o[:qty] >= trade[:qty] && o[:mark] != 'yes'}
+    #   difference = ops[:qty] - trade[:qty]
+    #   open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => ops[:price], :qty => difference, :sold => trade[:qty]}
     
-    elsif open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] < trade[:qty] && o[:mark] != 'yes'}
+    if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:qty] > 0 && o[:mark] != 'yes'}
       ops = open_positions.select {|o| o[:ticker] == trade[:ticker] && o[:qty] > 0 && o[:mark] != 'yes'}
       qty_sold = trade[:qty]
       ops.each do |op|
@@ -140,15 +137,30 @@ transactions.each_with_index do |trade,idx|
           remainder = qty_sold - op[:qty]
           op_decrease = qty_sold - remainder
           qty_subtracted = op[:qty] - op_decrease
-          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted}
+          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted, :sold => op_decrease}
           qty_sold = remainder
         elsif qty_sold > 0 && qty_sold < op[:qty]
           qty_subtracted = op[:qty] - qty_sold
-          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted}
+          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted, :sold => qty_sold}
+          qty_sold = 0
         else
           puts "Error: Check ops.each. #{trade}"
         end 
       end
+    end
+
+    unique_prices = transactions.select {|o| o[:ticker] == trade[:ticker]}.uniq! {|t| t[:price]}
+    if unique_prices != nil
+      unique_prices.each_with_index do |uq, idx|
+        check_positions = open_positions.select {|o| o[:ticker] == trade[:ticker] && o[:price] == uq[:price]}
+        check_pos_count = check_positions.count - 1
+        check_positions.each_with_index do |pos, idx|
+          if idx < check_pos_count
+            pos[:mark] = 'yes'
+          end
+        end
+    end      
+
 
     else
       puts "Error: Check Sell conditional. #{trade}"
