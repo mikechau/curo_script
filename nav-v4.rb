@@ -102,7 +102,7 @@ transactions.each_with_index do |trade,idx|
         end_day = eod_prices.select {|t| t[:ticker] == trade[:ticker] && Date.parse(t[:date]) >= Date.parse(trade[:date])}
         
         end_day.each do |history|
-          market_status_array << {:date => history[:date], :desc => 'MRKT', :ticker => history[:ticker], :price => history[:eod_price], :index => trade[:date]}
+          market_status_array << {:date => history[:date], :desc => 'MRKT', :ticker => history[:ticker], :price => history[:eod_price]}
         end
 
       else
