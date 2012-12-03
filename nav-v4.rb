@@ -136,13 +136,13 @@ transactions.each_with_index do |trade,idx|
           remainder = qty_sold - op[:qty]
           op_decrease = qty_sold - remainder
           qty_subtracted = op[:qty] - op_decrease
-          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted, :sold => op_decrease, :test => '1'}
+          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted, :sold => op_decrease}
           qty_sold = remainder
         # elsif qty_sold > 0 && qty_sold < op[:qty]
         else
           qty_subtracted = op[:qty] - qty_sold
-          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted, :sold => qty_sold, :test => '2'}
-          qty_sold = 0
+          open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted, :sold => qty_sold}
+          qty_sold = 0.0
         end 
       end
     end
