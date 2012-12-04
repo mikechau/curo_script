@@ -31,7 +31,11 @@ eod_prices = [
               {:date => '2011-05-01', :ticker => 'AAPL', :eod_price => 17.0},
               {:date => '2011-05-02', :ticker => 'AAPL', :eod_price => 19.0},
               {:date => '2011-05-03', :ticker => 'AAPL', :eod_price => 22.0},
+              {:date => '2011-05-04', :ticker => 'AAPL', :eod_price => 22.0},
+              {:date => '2011-05-05', :ticker => 'AAPL', :eod_price => 22.0},
+              {:date => '2011-05-06', :ticker => 'AAPL', :eod_price => 22.0},
               {:date => '2011-05-21', :ticker => 'AAPL', :eod_price => 31.0},
+              {:date => '2011-05-22', :ticker => 'AAPL', :eod_price => 31.0},
               {:date => '2011-06-04', :ticker => 'AAPL', :eod_price => 10.0},
               {:date => '2011-06-09', :ticker => 'AAPL', :eod_price => 10.0},
               {:date => '2011-06-09', :ticker => 'GOOG', :eod_price => 55.0},
@@ -44,7 +48,6 @@ eod_prices = [
 
 open_positions = []
 
-market_status_array = []
 trades_array = []
 sells_log = []
 
@@ -56,10 +59,11 @@ transactions.each_with_index do |trade,idx|
 ############# BUY CHECK
   if trade[:action] == 'BUY'
 
-  # shovel the transactions hash without :acc_for hash into trades_array
-  trades_array << {:date => trade[:date], :desc => trade[:action], :ticker => trade[:ticker], :price => trade[:price], :qty => trade[:qty], :order => 1}
+  # shovel the transactions hash into trades_array
+  trades_array << {:date => trade[:date], :desc => trade[:action], :ticker => trade[:ticker], :price => trade[:price], :qty => trade[:qty]}
 
   ###############################################
+
     #check if Buy exists in open_positions array, if not add to array
     if open_positions.any? {|o| o[:ticker] == trade[:ticker] && o[:price] == trade[:price] && o[:qty] > 0 && o[:date] == trade[:date] && o[:mark] != true} 
       matching_positions = open_positions.select {|o| o[:ticker] == trade[:ticker] && o[:price] == trade[:price] && o[:mark] != true}
@@ -104,13 +108,12 @@ transactions.each_with_index do |trade,idx|
           op_decrease = qty_sold - remainder
           qty_subtracted = op[:qty] - op_decrease
           open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted, :sold => op_decrease, :log => 'SELL'}
-          sells_log << {:date => trade[:date], :desc => 'SELL', :ticker => trade[:ticker], :price => op[:price], :qty => op_decrease, :sell_price => trade[:price], :book_qty => op[:qty]}
+          sells_log << {:date => trade[:date], :desc => 'SELL', :ticker => trade[:ticker], :price => op[:price], :qty => op_decrease, :sell_price => trade[:price]}
           qty_sold = remainder
-        # elsif qty_sold > 0 && qty_sold < op[:qty]
         elsif qty_sold > 0 && qty_sold < op[:qty]
           qty_subtracted = op[:qty] - qty_sold
           open_positions << {:date => trade[:date], :ticker => trade[:ticker], :price => op[:price], :qty => qty_subtracted, :sold => qty_sold, :log => 'SELL'}
-          sells_log << {:date => trade[:date], :desc => 'SELL', :ticker => trade[:ticker], :price => op[:price], :qty => qty_sold, :sell_price => trade[:price], :trade_qty => trade[:qty], :op => op[:qty], :setting => 'zero'}
+          sells_log << {:date => trade[:date], :desc => 'SELL', :ticker => trade[:ticker], :price => op[:price], :qty => qty_sold, :sell_price => trade[:price]}
           break
         else
           puts "ERROR with qty_sold if: #{op} :: #{trade} :: #{qty_sold}"
@@ -139,7 +142,6 @@ transactions.each_with_index do |trade,idx|
 
 end
 
-# market_log = market_status_array
 op_log = []
 market_log = []
 
@@ -182,36 +184,10 @@ end
 
   ###############################################
 
-# sells_log.each do |s|
-#   s[:order] = 3
-# end
-
-# market_log.each do |m|
-#   m[:order] = 5
-# end
-
-# trades_array += op_buy_log
-# trades_array += sells_log
-# trades_array += op_sell_log
-# trades_array += market_log
-
-# trades_array.sort! { |x, y| x[:date] == y[:date]? x[:order] <=> y[:order] : x[:date] <=> y[:date] }
-
 trades_array += sells_log
-trades_array += market_log
+trades_array += (market_log.uniq!)
 
 trades_array.sort! { |x, y| Date.parse(x[:date]) <=> Date.parse(y[:date])}
-
-puts trades_array
-
-puts '---------------'
-zero_sells = trades_array.select {|t| t[:qty] == 0 && t[:desc] == 'SELL'}
-zero_sells.each do |x|
-  puts x
-end
-
-puts '--sell log'
-puts sells_log
 
 negative_sells = trades_array.select {|t| t[:desc] == 'SELL'}
 negative_sells.each do |trade|
@@ -221,47 +197,72 @@ end
 ###### VARIABLES ###### 
 
 nav_units = 1000.0
-cash_balance = 2100000.0
+initial_cash_balance = 2100000.0
+cash_balance = initial_cash_balance
 stock_balance = 0.0
 nav_per_unit = cash_balance / nav_units
 market_stock_balance = 0.0
 
+trades_count = trades_array.count
 qty = 0.0
+portfolio = []
 
 puts '============================================================================='
-puts "Starting Cash Balance: #{cash_balance}"
-puts "Starting Stock Balance: #{stock_balance}"
-puts "Starting Net Asset Value Units: #{nav_units}"
-puts "Starting NAV per Unit: #{nav_per_unit}"
+puts "Starting: Cash Balance: #{cash_balance} || Stock Balance: #{stock_balance}"
+puts "Starting Net Asset Value Units: #{nav_units} ||  NAV per Unit: #{nav_per_unit}"
 puts '============================================================================='
 
-# trades_array.each_with_index do |trade, idx|
-#   # this is a buy or sell
-#   if trade[:qty] != nil && trade[:desc] == 'BUY'
-#     book_value = trade[:qty] * trade[:price] * -1
-#     cash_balance += book_value
-#     stock_balance += (book_value * -1)
-#     total_value = cash_balance + stock_balance
-#     puts "[#{idx+1}] || #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Price: #{trade[:price]} || Qty: #{trade[:qty]} || Book Value: #{book_value} || Cash Balance: #{cash_balance} || Stock Balance: #{stock_balance} || Total Value: #{total_value}"
-#   elsif trade[:qty] != nil && trade[:desc] == 'SELL'
-#     sell_value = trade[:qty] * trade[:sell_price] * -1
-#     cash_balance += sell_value
-#     stock_balance += (trade[:price] * -1)
-#     total_value = cash_balance + stock_balance
-#     puts "[#{idx+1}] || #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Sell Price: #{trade[:sell_price]} || Qty: #{trade[:qty]} || Sell Value: #{sell_value} || Cash Balance: #{cash_balance} || Stock Balance: #{stock_balance} || Total Value: #{total_value}"
-#   #this is market
-#   elsif trade[:qty] != nil && trade[:desc] == 'POS'
-#     pos_value = trade[:qty] * trade[:price] * -1
-#     total_value = cash_balance + stock_balance
-#     puts "[#{idx+1}] || #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Price: #{trade[:price]} || Qty: #{trade[:qty]} || Value: #{pos_value} || Cash Balance: #{cash_balance} || Stock Balance: #{stock_balance} || Total Value: #{total_value}"
-#   elsif trade[:desc] == 'MRKT'
-#     puts "[#{idx+1}] || #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Price: #{trade[:price]}"
-#   end
-# end
+single_dash = '----------------------------------------------------------------------------------------------------'
 
-puts '============================================================================='
-puts 'Transactions:'
-puts transactions
+trades_array.each_with_index do |trade, idx|
+puts single_dash
+  if trade[:desc] == 'BUY'
+    book_value = trade[:qty] * trade[:price] * -1
+    cash_balance += book_value
+    stock_balance += (book_value * -1)
+    total_value = cash_balance + stock_balance
+    puts "[#{idx+1}] || #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Book Price: #{trade[:price]} || Qty: #{trade[:qty]} || Book Value: #{book_value}"
+    puts "     Cash Balance: #{cash_balance} || Stock Balance: #{stock_balance} || Total Value: #{total_value}"
+
+  elsif trade[:desc] == 'SELL'
+    sell_value = trade[:qty] * trade[:sell_price] * -1
+    cash_balance += sell_value
+    stock_balance += (trade[:price] * -1)
+    total_value = cash_balance + stock_balance
+    puts "[#{idx+1}] || #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Sell Price: #{trade[:sell_price]} || Qty: #{trade[:qty]} || Sell Value: #{sell_value}"
+    book_value = trade[:price] * trade[:qty]
+    puts "     Book Price: #{trade[:price]} || Book Value: #{book_value}"
+    profit = sell_value - book_value
+    profit_percent = ((profit) / book_value) * 100
+    puts "     Profit: #{profit} || Profit %: #{profit_percent}%"
+    puts "     Cash Balance: #{cash_balance} || Stock Balance: #{stock_balance} || Total Value: #{total_value}"
+
+  elsif trade[:desc] == 'MRKT'
+    book_value = trade[:book_price] * trade[:qty]
+    mrkt_value = trade[:qty] * trade[:price]
+    mrkt_difference = mrkt_value - book_value
+    stock_balance += mrkt_difference
+    total_value = cash_balance + stock_balance
+    puts "[#{idx+1}] || #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Market Price: #{trade[:price]} || Qty: #{trade[:qty]}"
+    puts "     Book Price: #{trade[:book_price]} || Book Value: #{book_value}"
+    stock_change = mrkt_value - book_value
+    stock_change_percent = ((stock_change) / book_value) * 100
+    puts "     Stock Change: #{stock_change} || Stock Change %: #{stock_change_percent}"
+    puts "     Cash Balance: #{cash_balance} || Stock Balance: #{stock_balance} || Total Value: #{total_value}"
+  end
+
+  if idx == trades_count - 1
+    portfolio = [total_value - initial_cash_balance, ((total_value - initial_cash_balance) / initial_cash_balance) * 100]
+  end
+
+end
+
+puts single_dash
+
+puts ''
+puts 'PORTFOLIO STATUS:'
+puts "Total Value Change: $#{portfolio[0]} || Return: #{portfolio[1]}%"
+puts ''
 
 puts '============================================================================='
 puts 'Positions:'
