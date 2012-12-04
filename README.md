@@ -1,10 +1,12 @@
-kurotrade
+# kurotrade
+============
 
 This is to test eventual logic that will be integrated into kurotrade.
 
 This script is for kurotrade's position tracking. Needs to be refactored!
 
-FAQ:
+## FAQ:
+
 1. Why is this called Curo instead of Kuro?
 - Done on purpose! :)
 
