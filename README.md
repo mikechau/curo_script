@@ -1,9 +1,11 @@
-# kurotrade
+kurotrade
 ============
 
 This is to test eventual logic that will be integrated into kurotrade.
 
-This script is for kurotrade's position tracking. Needs to be refactored!
+This script is for kurotrade's position tracking. 
+
+### Needs to be refactored!
 
 ## FAQ:
 
