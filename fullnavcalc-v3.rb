@@ -7,16 +7,16 @@ transactions = [
                 {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
                 {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 5.00, :acc_for => 'no'},
                 {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 10.00, :qty => 5.00, :acc_for => 'no' }
-                # {:date => '2011-04-19', :action => "SELL", :ticker => "AAPL", :price => 10.00, :qty => 20.00, :acc_for => 'no'},
-                # {:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 5.00, :acc_for => 'no'},
-                # {:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 15.00, :acc_for => 'no'},
-                # {:date => '2011-05-01', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 55.00, :acc_for => 'no'},
-                # {:date => '2011-05-02', :action => "BUY", :ticker => "AAPL", :price => 13.00, :qty => 55.00, :acc_for => 'no'},
-                # {:date => '2011-05-04', :action => "SELL", :ticker => "AAPL", :price => 13.00, :qty => 100.00, :acc_for => 'no'},
-                # {:date => '2011-05-04', :action => "SELL", :ticker => "AAPL", :price => 13.00, :qty => 10.00, :acc_for => 'no'},
-                # {:date => '2011-05-19', :action => "BUY", :ticker => "AAPL", :price => 100.00, :qty => 5000.00, :acc_for => 'no'},
-                # {:date => '2011-05-20', :action => "BUY", :ticker => "AAPL", :price => 101.00, :qty => 500.00, :acc_for => 'no'},
-                # {:date => '2011-05-25', :action => "SELL", :ticker => "AAPL", :price => 100.00, :qty => 500.00, :acc_for => 'no'}
+                {:date => '2011-04-19', :action => "SELL", :ticker => "AAPL", :price => 10.00, :qty => 20.00, :acc_for => 'no'},
+                {:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 5.00, :acc_for => 'no'},
+                {:date => '2011-04-22', :action => "SELL", :ticker => "AAPL", :price => 15.00, :qty => 15.00, :acc_for => 'no'},
+                {:date => '2011-05-01', :action => "BUY", :ticker => "AAPL", :price => 12.00, :qty => 55.00, :acc_for => 'no'},
+                {:date => '2011-05-02', :action => "BUY", :ticker => "AAPL", :price => 13.00, :qty => 55.00, :acc_for => 'no'},
+                {:date => '2011-05-04', :action => "SELL", :ticker => "AAPL", :price => 13.00, :qty => 100.00, :acc_for => 'no'},
+                {:date => '2011-05-04', :action => "SELL", :ticker => "AAPL", :price => 13.00, :qty => 10.00, :acc_for => 'no'},
+                {:date => '2011-05-19', :action => "BUY", :ticker => "AAPL", :price => 100.00, :qty => 5000.00, :acc_for => 'no'},
+                {:date => '2011-05-20', :action => "BUY", :ticker => "AAPL", :price => 101.00, :qty => 500.00, :acc_for => 'no'},
+                {:date => '2011-05-25', :action => "SELL", :ticker => "AAPL", :price => 100.00, :qty => 500.00, :acc_for => 'no'}
                ]
 
 eod_prices = [
@@ -167,7 +167,51 @@ transactions.each_with_index do |trade,idx|
   end
 end
 
-puts '----OPEN POSITIONS---------'
-puts open_positions
-puts '----TRANSACTIONS---------'
-puts transactions
+# puts '----OPEN POSITIONS---------'
+# puts open_positions
+# puts '----TRANSACTIONS---------'
+# puts transactions
+
+
+###### VARIABLES ###### 
+
+nav_units = 1000.0
+cash_balance = 2000.0
+stock_balance = 0.0
+nav_per_unit = cash_balance / nav_units
+market_stock_balance = 0.0
+
+qty = 0.0
+
+puts '============================================================================='
+puts "Starting Cash Balance: #{cash_balance}"
+puts "Starting Stock Balance: #{stock_balance}"
+puts "Starting Net Asset Value Units: #{nav_units}"
+puts "Starting NAV per Unit: #{nav_per_unit}"
+puts '============================================================================='
+
+trades_array.each_with_index do |trade, idx|
+  # this is a buy or sell
+  if trade[:qty] != nil
+    book_value = trade[:qty] * trade[:price] * -1
+    cash_balance += book_value
+    stock_balance += (book_value * -1)
+    puts "[#{idx+1}] || #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Price: #{trade[:price]} || Qty: #{trade[:qty]} || Book Value: #{book_value} || Cash Balance: #{cash_balance} || Stock Balance: #{stock_balance}"
+    puts "#{trade[:date]} :: #{open_positions}"
+  #this is market
+  else
+    #market_value = trade[:price] #broken
+    #market_stock_balance += (market_value * -1)
+    puts "[#{idx+1}] || #{trade[:date]} || [#{trade[:desc]}] || [#{trade[:ticker]}] || Price: #{trade[:price]} || Market Value: "
+  end
+end
+
+puts '============================================================================='
+puts 'Positions:'
+open_positions.each do |op|
+  if op[:qty] > 0
+    puts "Ticker: #{op[:ticker]} || Book Price: #{op[:price]} || Qty: #{op[:qty]}"
+  else
+    puts "Ticker: #{op[:ticker]} || Book Price: #{op[:price]} || Qty: #{op[:qty]} - [CLOSED]" 
+  end
+end
