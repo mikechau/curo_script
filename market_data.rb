@@ -13,7 +13,7 @@ puts dl_csv
 
 def read(url)
  CSV.new(open(url), :headers => :first_row).each do |line|
-   puts line['Date']
+   puts " GOOG || #{line['Date']} || #{line['Close']} || #{line['Adj Close']} "
  end
 end
 
