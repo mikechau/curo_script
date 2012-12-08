@@ -3,6 +3,10 @@ require 'date'
 
 transactions = [
                 {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 11.0, :qty => 15.0},
+                {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 12.0, :qty => 15.0},
+                # {:date => '2011-05-22', :action => "SELL", :ticker => "AAPL", :price => 11.0, :qty => 15.0},
+                # {:date => '2011-05-23', :action => "SELL", :ticker => "AAPL", :price => 11.0, :qty => 15.0},
+                # {:date => '2011-06-16', :action => "BUY", :ticker => "AAPL", :price => 11.0, :qty => 15.0}
                 {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 11.0, :qty => 15.0},
                 {:date => '2011-04-16', :action => "BUY", :ticker => "AAPL", :price => 12.0, :qty => 5.0},
                 {:date => '2011-04-17', :action => "BUY", :ticker => "AAPL", :price => 12.0, :qty => 5.0},
@@ -17,6 +21,7 @@ transactions = [
                 {:date => '2011-05-25', :action => "SELL", :ticker => "AAPL", :price => 100.0, :qty => 500.0},
                 {:date => '2011-06-09', :action => "BUY", :ticker => "GOOG", :price => 100.0, :qty => 500.0},
                 {:date => '2011-06-12', :action => "SELL", :ticker => "GOOG", :price => 55.0, :qty => 100.0}
+                # {:date => '2011-06-12', :action => "CASH ADJUSTMENT", :total => -200000}
                ]
 
 eod_prices = [
@@ -51,6 +56,8 @@ open_positions = []
 trades_array = []
 sells_log = []
 
+cash_changes = []
+
 ###### Taking arrays to create a main array to work with ###### 
 
 #loop through the transactions array
@@ -82,7 +89,7 @@ transactions.each_with_index do |trade,idx|
 
     unique_prices = transactions.select {|o| o[:ticker] == trade[:ticker]}.uniq! {|t| t[:price]}
     if unique_prices != nil
-      unique_prices.each_with_index do |uq, idx|
+      unique_prices.each do |uq|
         check_positions = open_positions.select {|o| o[:ticker] == trade[:ticker] && o[:price] == uq[:price]}
         check_pos_count = check_positions.count - 1
         check_positions.each_with_index do |pos, idx|
@@ -123,7 +130,7 @@ transactions.each_with_index do |trade,idx|
 
     unique_prices = transactions.select {|o| o[:ticker] == trade[:ticker]}.uniq! {|t| t[:price]}
     if unique_prices != nil
-      unique_prices.each_with_index do |uq, idx|
+      unique_prices.each do |uq|
         check_positions = open_positions.select {|o| o[:ticker] == trade[:ticker] && o[:price] == uq[:price]}
         check_pos_count = check_positions.count - 1
         check_positions.each_with_index do |pos, idx|
@@ -135,6 +142,9 @@ transactions.each_with_index do |trade,idx|
     end     
 
   ###############################################
+
+  elsif trade[:action] == 'CASH ADJUSTMENT'
+    cash_changes << {:date => trade[:date], :desc => 'CASH ADJUSTMENT', :total => trade[:total]}
 
   else
     puts '[BUY/SELL] - ERROR: Action not BUY or SELL!'
@@ -184,8 +194,18 @@ end
 
   ###############################################
 
-trades_array += sells_log
-trades_array += (market_log.uniq!)
+if sells_log != nil
+  trades_array += sells_log
+end
+
+if cash_changes != nil
+  trades_array += cash_changes
+end
+
+if market_log !=nil
+  market_log.uniq!
+  trades_array += market_log
+end
 
 trades_array.sort! { |x, y| Date.parse(x[:date]) <=> Date.parse(y[:date])}
 
@@ -248,6 +268,12 @@ puts single_dash
     stock_change = mrkt_value - book_value
     stock_change_percent = ((stock_change) / book_value) * 100
     puts "     Stock Change: #{stock_change} || Stock Change %: #{stock_change_percent}"
+    puts "     Cash Balance: #{cash_balance} || Stock Balance: #{stock_balance} || Total Value: #{total_value}"
+
+  elsif trade[:desc] == 'CASH ADJUSTMENT'
+    cash_balance += trade[:total]
+    total_value = cash_balance + stock_balance
+    puts "[#{idx+1}] || #{trade[:date]} || CASH ADJUSTMENT for $#{trade[:total]}"
     puts "     Cash Balance: #{cash_balance} || Stock Balance: #{stock_balance} || Total Value: #{total_value}"
   end
 

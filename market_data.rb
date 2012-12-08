@@ -42,7 +42,7 @@ end
 url = "http://finance.yahoo.com/d/quotes.csv?s=#{ticker_string}&f=sd1t1l1"
 
  CSV.new(open(url)).each do |line|
-   puts "#{line[0]}|| #{line[1]} || #{line[2]} || #{line[3]}"
+   puts "Ticker: #{line[0]} || Last Trade Date: #{line[1]} || Last Trade Time: #{line[2]} || Last Trade Price: #{line[3]}"
  end
 
 # s = symbol
